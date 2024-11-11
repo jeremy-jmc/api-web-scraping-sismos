@@ -3,7 +3,7 @@ service: api-web-scraping-sismos
 
 provider:
   name: aws
-  runtime: python3.12
+  runtime: python3.10
   # Default memory size for functions (default: 1024MB)
   memorySize: 1024
   timeout: 30

@@ -28,7 +28,7 @@ def lambda_handler(event, context):
         #     record['hora_local'] = datetime.datetime.strptime(record['hora_local'], '%Y-%m-%dT%H:%M:%S.%fZ').time()
         #     record['fecha_y_hora_local'] = datetime.datetime.combine(record['fecha_local'], record['hora_local'])
 
-        sorted_data = sorted(data, key=lambda x: x['fecha_y_hora_local'], reverse=True)[:10]
+        sorted_data = sorted(data, key=lambda x: (x['fecha_local'], x['hora_local']), reverse=True)[:10]
 
         records = [
             {

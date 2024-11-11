@@ -23,17 +23,19 @@ def lambda_handler(event, context):
         for record in data:
             record['descargas'] = record.pop('reporte_acelerometrico_pdf')
 
-        for record in data:
-            record['fecha_local'] = datetime.datetime.strptime(record['fecha_local'], '%Y-%m-%dT%H:%M:%S.%fZ')
-            record['hora_local'] = datetime.datetime.strptime(record['hora_local'], '%Y-%m-%dT%H:%M:%S.%fZ').time()
-            record['fecha_y_hora_local'] = datetime.datetime.combine(record['fecha_local'], record['hora_local'])
+        # for record in data:
+        #     record['fecha_local'] = datetime.datetime.strptime(record['fecha_local'], '%Y-%m-%dT%H:%M:%S.%fZ')
+        #     record['hora_local'] = datetime.datetime.strptime(record['hora_local'], '%Y-%m-%dT%H:%M:%S.%fZ').time()
+        #     record['fecha_y_hora_local'] = datetime.datetime.combine(record['fecha_local'], record['hora_local'])
 
         sorted_data = sorted(data, key=lambda x: x['fecha_y_hora_local'], reverse=True)[:10]
 
         records = [
             {
                 'referencia': record['referencia'],
-                'fecha_y_hora_local': record['fecha_y_hora_local'],
+                'fecha_local': record['fecha_local'],
+                'hora_local': record['hora_local'],
+                # 'fecha_y_hora_local': record['fecha_y_hora_local'],
                 'magnitud': record['magnitud'],
                 'descargas': record['descargas'],
                 'id': str(uuid.uuid4())

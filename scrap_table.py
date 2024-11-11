@@ -1,7 +1,7 @@
 import requests
 import boto3
 import uuid
-import pandas as pd
+import datetime
 
 
 def lambda_handler(event, context):
@@ -20,14 +20,26 @@ def lambda_handler(event, context):
 
         # Data parsing and processing
         data = response.json()
-        df = pd.DataFrame(data).rename(columns={'reporte_acelerometrico_pdf': 'descargas'})
-        df['fecha_local'] = pd.to_datetime(df['fecha_local'])
-        df['hora_local'] = pd.to_datetime(df['hora_local'])
-        df['fecha_y_hora_local'] = pd.to_datetime(df['fecha_local']) + pd.to_timedelta(df['hora_local'].dt.strftime('%H:%M:%S'))
-        df = df.sort_values(by='fecha_y_hora_local', ascending=False).head(10)
+        for record in data:
+            record['descargas'] = record.pop('reporte_acelerometrico_pdf')
 
-        records = df[['referencia', 'fecha_y_hora_local', 'magnitud', 'descargas']].to_dict(orient='records')
-        records = [{**record, 'id': str(uuid.uuid4())} for record in records]
+        for record in data:
+            record['fecha_local'] = datetime.datetime.strptime(record['fecha_local'], '%Y-%m-%dT%H:%M:%S.%fZ')
+            record['hora_local'] = datetime.datetime.strptime(record['hora_local'], '%Y-%m-%dT%H:%M:%S.%fZ').time()
+            record['fecha_y_hora_local'] = datetime.datetime.combine(record['fecha_local'], record['hora_local'])
+
+        sorted_data = sorted(data, key=lambda x: x['fecha_y_hora_local'], reverse=True)[:10]
+
+        records = [
+            {
+                'referencia': record['referencia'],
+                'fecha_y_hora_local': record['fecha_y_hora_local'],
+                'magnitud': record['magnitud'],
+                'descargas': record['descargas'],
+                'id': str(uuid.uuid4())
+            }
+            for record in sorted_data
+        ]
 
         # Guardar los datos en DynamoDB
         dynamodb = boto3.resource('dynamodb')
